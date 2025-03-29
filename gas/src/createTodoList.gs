@@ -18,7 +18,7 @@ function createToDoList() {
  * @param {Array} events 予定の配列
  */
 function writeEventsToDocument(events) {
-  // 現在のドキュメントを取得
+  // ドキュメントを取得
   const doc = DocumentApp.getActiveDocument();
   const body = doc.getBody();
 
