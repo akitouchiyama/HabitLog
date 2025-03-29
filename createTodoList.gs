@@ -1,8 +1,5 @@
-// TODOリストフォルダ
-// const FOLDER_ID = "1DywCksLqibr2hNmtAQdCHFVJPJzoTwAJ";
-
 /**
- * ToDoリストを作成するメイン関数。
+ * ToDoリストを作成するメイン関数
  */
 function createToDoList() {
   const today = new Date()
@@ -27,6 +24,9 @@ function writeEventsToDocument(events) {
 
   // 予定が存在する場合のみ処理を実行
   if (events.length > 0) {
+    // 既存の予定を取得
+    const existingEvents = getExistingEvents(body);
+    
     // 予定セクションのヘッダーを追加
     body.appendParagraph("【本日の予定】").setHeading(DocumentApp.ParagraphHeading.HEADING1);
     
@@ -41,16 +41,67 @@ function writeEventsToDocument(events) {
                      ' - ' + 
                      Utilities.formatDate(endTime, 'JST', 'HH:mm');
       
-      // チェックボックスと予定を追加
-      const paragraph = body.appendParagraph();
-      const checkbox = paragraph.addCheckBox();
-      checkbox.setChecked(false);
-      paragraph.appendText(` ${timeStr} ${title}`);
+      // 予定の文字列を作成
+      const eventText = `${timeStr} ${title}`;
+      
+      // 既存の予定に存在する場合、チェックボックスをリセット
+      if (existingEvents.includes(eventText)) {
+        resetExistingCheckbox(body, eventText);
+      } else {
+        // 新規予定を追加
+        const paragraph = body.appendParagraph();
+        const checkbox = paragraph.addCheckBox();
+        checkbox.setChecked(false);
+        paragraph.appendText(` ${eventText}`);
+      }
     });
     
     // 空行を追加
     body.appendParagraph("");
   }
+}
+
+/**
+ * 既存の予定のチェックボックスをリセットする
+ * 
+ * @param {GoogleAppsScript.Document.Body} body ドキュメントの本文
+ * @param {string} eventText 予定の文字列
+ */
+function resetExistingCheckbox(body, eventText) {
+  const paragraphs = body.getParagraphs();
+  
+  paragraphs.forEach(paragraph => {
+    const text = paragraph.getText();
+    // チェックボックスが☑の段落のみを処理
+    if (text.includes('☑') && text.includes(eventText)) {
+      // チェックボックスを☐に変更
+      const newText = text.replace('☑', '☐');
+      paragraph.setText(newText);
+    }
+  });
+}
+
+/**
+ * ドキュメント内の既存の予定を取得する
+ * 
+ * @param {GoogleAppsScript.Document.Body} body ドキュメントの本文
+ * @return {Array} 既存の予定の配列
+ */
+function getExistingEvents(body) {
+  const existingEvents = [];
+  const paragraphs = body.getParagraphs();
+  
+  paragraphs.forEach(paragraph => {
+    const text = paragraph.getText();
+    // チェックボックスを含む段落のみを処理
+    if (text.includes('☐') || text.includes('☑')) {
+      // チェックボックスと時間の部分を除去して予定のタイトルのみを取得
+      const eventText = text.replace(/[☐☑]?\s*\d{2}:\d{2}\s*-\s*\d{2}:\d{2}\s*/, '').trim();
+      existingEvents.push(eventText);
+    }
+  });
+  
+  return existingEvents;
 }
 
 /**
