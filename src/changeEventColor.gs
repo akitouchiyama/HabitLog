@@ -1,45 +1,44 @@
 /**
- * ドキュメントの編集をトリガーに実行される関数
- * 
- * @param {Object} e イベントオブジェクト
+ * チェック済み予定の色を変更する関数
  */
-function onEdit(e) {
-  try {
-    // 編集されたドキュメントを取得
+function updateCheckedEventColors() {
+      try {
+    // アクティブなドキュメントを取得
     const doc = DocumentApp.getActiveDocument();
     if (!doc) {
       console.log('ドキュメントが見つかりません');
       return;
     }
 
-    // チェックボックスの変更を処理
-    processCheckboxChanges(doc);
+    // 完了済み予定の色変更を処理
+    processCompletedEvents(doc);
   } catch (error) {
     console.error(`エラーが発生しました: ${error.message}`);
   }
 }
 
 /**
- * チェックボックスの変更を処理する
+ * 完了済み予定の色変更を処理する
  * 
  * @param {GoogleAppsScript.Document.Document} doc ドキュメント
  */
-function processCheckboxChanges(doc) {
+function processCompletedEvents(doc) {
   const body = doc.getBody();
   const today = new Date();
   
-  // チェックボックスを含む段落のみを取得
-  const paragraphs = body.getParagraphs().filter(paragraph => 
-    paragraph.getText().includes('☑')
-  );
+  // OK/NG付きのイベントを含む段落のみを取得
+  const paragraphs = body.getParagraphs().filter(paragraph => {
+    const text = paragraph.getText();
+    return text.includes('OK ') || text.includes('NG ');
+  });
 
   if (paragraphs.length === 0) {
-    console.log('チェック済みの予定はありません');
+    console.log('OK/NG付きの予定はありません');
     return;
   }
 
   // 正規表現を一度だけコンパイル
-  const timeTitleRegex = /(\d{2}:\d{2}\s*-\s*\d{2}:\d{2})\s*(.+)/;
+  const statusEventRegex = /(OK|NG)\s+(.+)/;
   
   // 処理結果を記録
   const results = {
@@ -52,16 +51,19 @@ function processCheckboxChanges(doc) {
   paragraphs.forEach(paragraph => {
     try {
       const text = paragraph.getText();
-      const match = text.match(timeTitleRegex);
+      const match = text.match(statusEventRegex);
       
       if (!match) {
         throw new Error(`予定の形式が不正です: ${text}`);
       }
 
-      const [_, timeStr, title] = match;
+      const [_, status, eventTitle] = match;
+      
+      // ステータスに応じて色を決定
+      const color = status === 'OK' ? CalendarApp.EventColor.SAGE : CalendarApp.EventColor.RED;
       
       // カレンダーのイベントを更新
-      const updateResult = updateEventColor(today, timeStr, title.trim());
+      const updateResult = updateEventByTitle(today, eventTitle.trim(), color);
       
       if (updateResult === true) {
         results.success++;
@@ -91,42 +93,20 @@ function processCheckboxChanges(doc) {
 }
 
 /**
- * 時間文字列を解析して開始時刻と終了時刻を取得する
- * 
- * @param {string} timeStr 時間文字列（"HH:mm - HH:mm"形式）
- * @returns {Object} 開始時刻と終了時刻のオブジェクト
- */
-function parseTimeString(timeStr) {
-  const [startStr, endStr] = timeStr.split('-').map(t => t.trim());
-  const [startHour, startMin] = startStr.split(':').map(Number);
-  const [endHour, endMin] = endStr.split(':').map(Number);
-  
-  return {
-    startHour,
-    startMin,
-    endHour,
-    endMin
-  };
-}
-
-/**
- * カレンダーのイベントの色を更新する
+ * イベントタイトルでカレンダーのイベントの色を更新する
  * 
  * @param {Date} date 対象の日付
- * @param {string} timeStr 時間文字列（"HH:mm - HH:mm"形式）
  * @param {string} title イベントのタイトル
+ * @param {GoogleAppsScript.Calendar.EventColor} color 設定する色
  * @returns {boolean} 更新が成功したかどうか
  */
-function updateEventColor(date, timeStr, title) {
+function updateEventByTitle(date, title, color) {
   try {
-    // 時間範囲を解析
-    const { startHour, startMin, endHour, endMin } = parseTimeString(timeStr);
-    
-    // 開始時刻と終了時刻を設定
+    // 対象日の開始時刻と終了時刻を設定（一日全体）
     const startTime = new Date(date);
-    startTime.setHours(startHour, startMin, 0, 0);
+    startTime.setHours(0, 0, 0, 0);
     const endTime = new Date(date);
-    endTime.setHours(endHour, endMin, 0, 0);
+    endTime.setHours(23, 59, 59, 999);
     
     // カレンダーから該当するイベントを検索
     const calendar = CalendarApp.getDefaultCalendar();
@@ -136,21 +116,22 @@ function updateEventColor(date, timeStr, title) {
     const matchingEvent = events.find(event => event.getTitle() === title);
     
     if (!matchingEvent) {
-      console.log(`イベントが見つかりませんでした: ${title} (${timeStr})`);
+      console.log(`イベントが見つかりませんでした: ${title}`);
       return false;
     }
 
     // イベントの色を変更
-    matchingEvent.setColor(CalendarApp.EventColor.SAGE);
-    console.log(`イベントの色を変更しました: ${title} (${timeStr})`);
+    matchingEvent.setColor(color);
+    const colorName = color === CalendarApp.EventColor.SAGE ? 'セージ色' : '赤色';
+    console.log(`イベントの色を${colorName}に変更しました: ${title}`);
     return true;
 
   } catch (error) {
     console.error(`イベントの色変更でエラー: ${error.message}`, {
       date: date.toISOString(),
-      timeStr,
       title
     });
     return false;
   }
 }
+
