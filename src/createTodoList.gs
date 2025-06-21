@@ -6,7 +6,6 @@ function createToDoList() {
 
   // 本日の予定を取得
   const events = getScheduleEvents(today);
-  console.log("本日の予定:", events);
 
   // 予定をドキュメントに書き込む
   writeEventsToDocument(events);
@@ -19,11 +18,12 @@ function createToDoList() {
  */
 function writeEventsToDocument(events) {
   // ドキュメントを取得
-  const doc = DocumentApp.getActiveDocument();
+  // TODO Githubに上げる前に環境変数にする
+  const doc = DocumentApp.openById('1RSiGh133NO0I-vvJWw0AW_1fBbr7vMiLGTY7LYoS4nU');
   const body = doc.getBody();
 
-  // 既存のチェックボックスを削除
-  removeExistingCheckboxes(body);
+  // 既存のドキュメントの内容を削除
+  body.clear();
 
   // 予定が存在する場合のみ処理を実行
   if (events.length > 0) {
@@ -45,32 +45,13 @@ function writeEventsToDocument(events) {
       const eventText = `${timeStr} ${title}`;
       
       // 新規予定を追加
-      const paragraph = body.appendParagraph();
-      const checkbox = paragraph.addCheckBox();
-      checkbox.setChecked(false);
-      paragraph.appendText(` ${eventText}`);
+      // 一旦リストアイテムの追加にする
+      body.appendListItem(`${eventText}`);
     });
     
     // 空行を追加
     body.appendParagraph("");
   }
-}
-
-/**
- * 既存のチェックボックスを削除する
- * 
- * @param {GoogleAppsScript.Document.Body} body ドキュメントの本文
- */
-function removeExistingCheckboxes(body) {
-  const paragraphs = body.getParagraphs();
-  
-  paragraphs.forEach(paragraph => {
-    const text = paragraph.getText();
-    // チェックボックスを含む段落を削除
-    if (text.includes('☐') || text.includes('☑')) {
-      paragraph.removeFromParent();
-    }
-  });
 }
 
 /**
@@ -87,6 +68,7 @@ function getScheduleEvents(date) {
   endTime.setHours(23, 59, 59, 999);
 
   // カレンダーから予定を取得
-  const calendar = CalendarApp.getDefaultCalendar();
+  // TODO Githubに上げる前に環境変数にする
+  const calendar = CalendarApp.getCalendarById('akitonkatu1266@gmail.com');
   return calendar.getEvents(startTime, endTime);
 }
