@@ -18,8 +18,11 @@ function createToDoList() {
  */
 function writeEventsToDocument(events) {
   // ドキュメントを取得
-  // TODO Githubに上げる前に環境変数にする
-  const doc = DocumentApp.openById('1RSiGh133NO0I-vvJWw0AW_1fBbr7vMiLGTY7LYoS4nU');
+  const documentId = PropertiesService.getScriptProperties().getProperty('DOCUMENT_ID');
+  if (!documentId) {
+    throw new Error('DOCUMENT_IDが設定されていません。PropertiesServiceで設定してください。');
+  }
+  const doc = DocumentApp.openById(documentId);
   const body = doc.getBody();
 
   // 既存のドキュメントの内容を削除
@@ -68,7 +71,10 @@ function getScheduleEvents(date) {
   endTime.setHours(23, 59, 59, 999);
 
   // カレンダーから予定を取得
-  // TODO Githubに上げる前に環境変数にする
-  const calendar = CalendarApp.getCalendarById('akitonkatu1266@gmail.com');
+  const calendarId = PropertiesService.getScriptProperties().getProperty('CALENDAR_ID');
+  if (!calendarId) {
+    throw new Error('CALENDAR_IDが設定されていません。PropertiesServiceで設定してください。');
+  }
+  const calendar = CalendarApp.getCalendarById(calendarId);
   return calendar.getEvents(startTime, endTime);
 }

@@ -3,8 +3,12 @@
  */
 function updateCheckedEventColors() {
       try {
-    // アクティブなドキュメントを取得
-    const doc = DocumentApp.getActiveDocument();
+    // ドキュメントを取得
+    const documentId = PropertiesService.getScriptProperties().getProperty('DOCUMENT_ID');
+    if (!documentId) {
+      throw new Error('DOCUMENT_IDが設定されていません。PropertiesServiceで設定してください。');
+    }
+    const doc = DocumentApp.openById(documentId);
     if (!doc) {
       console.log('ドキュメントが見つかりません');
       return;
@@ -109,7 +113,11 @@ function updateEventByTitle(date, title, color) {
     endTime.setHours(23, 59, 59, 999);
     
     // カレンダーから該当するイベントを検索
-    const calendar = CalendarApp.getDefaultCalendar();
+    const calendarId = PropertiesService.getScriptProperties().getProperty('CALENDAR_ID');
+    if (!calendarId) {
+      throw new Error('CALENDAR_IDが設定されていません。PropertiesServiceで設定してください。');
+    }
+    const calendar = CalendarApp.getCalendarById(calendarId);
     const events = calendar.getEvents(startTime, endTime);
     
     // タイトルが一致するイベントを探す
