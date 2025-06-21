@@ -64,7 +64,7 @@ function processCompletedEvents(doc) {
       const [_, status, eventTitle] = match;
       
       // ステータスに応じて色を決定
-      const color = status === 'OK' ? CalendarApp.EventColor.SAGE : CalendarApp.EventColor.RED;
+      const color = status === 'OK' ? CalendarApp.EventColor.GREEN : CalendarApp.EventColor.RED;
       
       // カレンダーのイベントを更新
       const updateResult = updateEventByTitle(today, eventTitle.trim(), color);
@@ -130,7 +130,7 @@ function updateEventByTitle(date, title, color) {
 
     // イベントの色を変更
     matchingEvent.setColor(color);
-    const colorName = color === CalendarApp.EventColor.SAGE ? 'セージ色' : '赤色';
+    const colorName = color === CalendarApp.EventColor.SAGE ? '緑色' : '赤色';
     console.log(`イベントの色を${colorName}に変更しました: ${title}`);
     return true;
 

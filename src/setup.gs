@@ -1,13 +1,11 @@
 /**
  * 環境変数を設定するためのヘルパー関数
+ * 実際の値に置き換えてください
  * 
  * @param {string} documentId GoogleドキュメントのID
  * @param {string} calendarId GoogleカレンダーのID
- * 
- * 使用例（実際のIDに置き換えてください）:
- * setupEnvironmentVariables('1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', 'your-calendar@gmail.com')
  */
-function setupEnvironmentVariables(documentId, calendarId) {
+function setupEnvironmentVariables(documentId = '1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', calendarId = 'your-calendar@gmail.com') {
   // パラメータのチェック
   if (!documentId || !calendarId) {
     console.error('エラー: documentIdとcalendarIdの両方を指定してください');

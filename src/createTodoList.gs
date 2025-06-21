@@ -35,21 +35,8 @@ function writeEventsToDocument(events) {
     
     // 各予定をチェックボックス形式で追加
     events.forEach(event => {
-      const title = event.getTitle();
-      const startTime = event.getStartTime();
-      const endTime = event.getEndTime();
-      
-      // 時間をフォーマット
-      const timeStr = Utilities.formatDate(startTime, 'JST', 'HH:mm') + 
-                     ' - ' + 
-                     Utilities.formatDate(endTime, 'JST', 'HH:mm');
-      
-      // 予定の文字列を作成
-      const eventText = `${timeStr} ${title}`;
-      
       // 新規予定を追加
-      // 一旦リストアイテムの追加にする
-      body.appendListItem(`${eventText}`);
+      body.appendListItem(event.getTitle());
     });
     
     // 空行を追加
