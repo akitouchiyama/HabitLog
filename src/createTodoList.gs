@@ -97,7 +97,7 @@ function formatSpreadsheet(eventCount) {
     }
     
     // 列幅の調整
-    sheet.autoResizeColumn(1);    // A列：タイトル（自動調整）
+    sheet.setColumnWidth(1, 200);    // A列：タイトル（自動調整）
     sheet.setColumnWidth(2, 400); // B列：予定内容
     sheet.setColumnWidth(3, 80);  // C列：チェックボックス
     
